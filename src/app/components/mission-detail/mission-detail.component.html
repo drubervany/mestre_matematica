@@ -1,0 +1,812 @@
+<div class="page" *ngIf="mission">
+  <div class="container">
+    <div class="game-layout">
+      <div class="avatar-side">
+        <app-avatar></app-avatar>
+      </div>
+      <div class="mission-side">
+        <app-hud></app-hud>
+        <div class="mission-header">
+          <button class="btn-back" (click)="goBack()">← Voltar</button>
+          <div class="title-with-info">
+            <h1 class="mission-title">{{ mission.title }}</h1>
+            <button *ngIf="mission.image" class="info-icon-btn" (click)="toggleOriginalImage()" title="Ver imagem original">
+              ❓
+            </button>
+          </div>
+        </div>
+
+    <div class="mission-content">
+      <!-- Seção: Conteúdo da Missão -->
+      <section class="mission-section">
+        <div class="image-container">
+          <!-- Se tem texto, mostrar -->
+          <div *ngIf="mission.textContent && !showOriginalImage" class="text-content-box">
+            <h3 class="text-content-title" *ngIf="mission.textTitle">{{ mission.textTitle }}</h3>
+            <div class="text-content-body">
+              <p *ngFor="let paragraph of getTextParagraphs()" class="text-paragraph">
+                {{ paragraph }}
+              </p>
+            </div>
+          </div>
+          
+          <!-- Mostrar imagem original quando clicar no ícone ? (apenas se tem image) -->
+          <div *ngIf="showOriginalImage && mission.image">
+            <div class="original-image-container">
+              <button class="close-image-btn" (click)="toggleOriginalImage()" title="Voltar">
+                ✕ Fechar imagem
+              </button>
+            </div>
+            <img 
+              [src]="mission.image" 
+              [alt]="mission.title" 
+              class="mission-image">
+          </div>
+        </div>
+      </section>
+
+      <!-- Seção: Explicação -->
+      <section class="mission-section">
+        <h2>📖 Vamos Aprender!</h2>
+        <div class="explanation-text">
+          <p *ngFor="let paragraph of mission.explanation.split('\n')">{{ paragraph }}</p>
+        </div>
+      </section>
+
+      <!-- Seção: Atividade Interativa -->
+      <section class="mission-section">
+        <h2>🎮 Hora de Praticar!</h2>
+        <div class="activity-container">
+          <div class="activity-item" *ngFor="let activity of mission.activities; let activityIndex = index">
+            <!-- Título do Desafio -->
+            <div class="activity-title" *ngIf="activity.title">{{ activity.title }}</div>
+            
+            <!-- Instrução -->
+            <div class="activity-instruction" *ngIf="activity.instruction">{{ activity.instruction }}</div>
+            
+            <!-- Descrição da Imagem (ocultar para Desafios 1, 2, 3 e 4) -->
+            <div class="activity-image-description" *ngIf="activity.imageDescription && activityIndex !== 0 && activityIndex !== 1 && activityIndex !== 2 && activityIndex !== 3">
+              <div class="image-description-label">📷 Imagem sugerida:</div>
+              <div class="image-description-text">{{ activity.imageDescription }}</div>
+            </div>
+            
+            <!-- Layout especial para Desafios 1, 2, 3, 4 e 5: pergunta com input inline -->
+            <div *ngIf="(activityIndex === 0 || activityIndex === 1 || activityIndex === 2 || activityIndex === 3 || activityIndex === 4) && activity.type === 'math-input' && activity.inputFields && activity.inputFields.length > 0 && activity.inputFields.length !== 10 && !(mission.id === 7 && activityIndex === 1)" class="activity-question-with-total">
+              <span class="activity-question-inline">{{ activity.question }}</span>
+              <input 
+                type="text"
+                class="math-input-total-inline"
+                [class.correct]="isInputFieldCorrect(activityIndex, 0) === true"
+                [class.incorrect]="isInputFieldCorrect(activityIndex, 0) === false"
+                [placeholder]="activity.inputFields[0]?.placeholder || ''"
+                [value]="getInputValue(activityIndex, 0)"
+                (input)="setInputValue(activityIndex, 0, filterNumbers($any($event.target).value))"
+                [disabled]="completedActivities[activityIndex]">
+            </div>
+            
+            <!-- Layout especial para questões que terminam com "= ?" (Desafios 65-76 e 79) -->
+            <div *ngIf="hasInlineEqualsQuestion(activityIndex) && activity.type === 'math-input' && activity.inputFields && activity.inputFields.length === 1" class="activity-question-with-equals">
+              <span class="activity-question-inline">{{ getQuestionBeforeEquals(activityIndex) }}</span>
+              <input 
+                type="text"
+                class="math-input-equals-inline"
+                [class.correct]="isInputFieldCorrect(activityIndex, 0) === true"
+                [class.incorrect]="isInputFieldCorrect(activityIndex, 0) === false"
+                [placeholder]="activity.inputFields[0]?.placeholder || '___'"
+                [value]="getInputValue(activityIndex, 0)"
+                (input)="setInputValue(activityIndex, 0, filterNumbers($any($event.target).value))"
+                [disabled]="completedActivities[activityIndex]">
+              <span class="input-check" *ngIf="isInputFieldCorrect(activityIndex, 0) === true">✅</span>
+            </div>
+            
+            <!-- Pergunta normal para outras atividades (incluindo Desafio 6) -->
+            <div class="activity-question" *ngIf="!((activityIndex === 0 || activityIndex === 1 || activityIndex === 2 || activityIndex === 3 || activityIndex === 4) && activity.type === 'math-input' && activity.inputFields && activity.inputFields.length > 0 && activity.inputFields.length !== 10 && !(mission.id === 7 && activityIndex === 1)) && !hasInlineEqualsQuestion(activityIndex) && !(mission.id === 7 && activityIndex === 1 && activity.type === 'math-input' && activity.inputFields?.length === 1)">
+              {{ activity.question }}
+            </div>
+            <!-- Layout especial para Desafio 2 (Missão 7): Questão com input inline -->
+            <div *ngIf="mission.id === 7 && activityIndex === 1 && activity.type === 'math-input' && activity.inputFields?.length === 1" class="activity-question-inline-special">
+              <span class="question-text">{{ activity.question }}</span>
+              <div class="input-with-text-inline">
+                <span class="input-fixed-text">R$</span>
+                <input 
+                  type="text"
+                  class="math-input-small"
+                  [class.correct]="isInputFieldCorrect(activityIndex, 0) === true"
+                  [class.incorrect]="isInputFieldCorrect(activityIndex, 0) === false"
+                  [placeholder]="activity.inputFields?.[0]?.placeholder || ''"
+                  [value]="getInputValue(activityIndex, 0)"
+                  (input)="setInputValue(activityIndex, 0, filterNumbers($any($event.target).value))"
+                  [disabled]="completedActivities[activityIndex]"
+                  maxlength="2">
+                <span class="input-fixed-text">reais</span>
+                <span class="input-check" *ngIf="isInputFieldCorrect(activityIndex, 0) === true">✅</span>
+              </div>
+            </div>
+            
+            <!-- Recompensa (mostrar quando completar) -->
+            <div class="activity-reward" *ngIf="activity.reward && completedActivities[activityIndex]">
+              {{ activity.reward }}
+            </div>
+            
+            <!-- Múltipla Escolha -->
+            <div class="options-container" *ngIf="activity.type === 'multiple-choice' && activity.options" [class.options-with-images]="hasImagesInOptions(activity)">
+              <button 
+                class="option-btn"
+                [class.has-image]="option.image"
+                *ngFor="let option of (shuffledOptions[activityIndex] || activity.options); let optionIndex = index"
+                (click)="checkAnswer(activityIndex, optionIndex, option.correct, option)">
+                <img *ngIf="option.image" [src]="option.image" [alt]="option.text" class="option-image">
+                <span class="option-text">{{ option.text }}</span>
+              </button>
+            </div>
+
+            <!-- Verdadeiro ou Falso -->
+            <div class="options-container" *ngIf="activity.type === 'true-false'">
+              <button 
+                class="option-btn"
+                (click)="checkTrueFalse(activityIndex, true, activity.correct === true)">
+                Verdadeiro ✅
+              </button>
+              <button 
+                class="option-btn"
+                (click)="checkTrueFalse(activityIndex, false, activity.correct === false)">
+                Falso ❌
+              </button>
+            </div>
+
+            <!-- Atividade de Match (Ligar Colunas) -->
+            <div class="match-container" *ngIf="activity.type === 'match' && activity.matchPairs">
+              <div class="match-instruction">Clique primeiro na imagem e depois no texto correspondente:</div>
+              <div class="match-columns">
+                <!-- Coluna de Imagens -->
+                <div class="match-column match-images-column">
+                  <div 
+                    class="match-image-item"
+                    *ngFor="let pair of shuffledMatchPairs[activityIndex]?.images || activity.matchPairs; let i = index"
+                    [class.selected]="selectedImageForMatch[activityIndex] === pair.matchId"
+                    [class.matched]="selectedMatches[activityIndex + '-' + pair.matchId] !== undefined"
+                    (click)="selectImageForMatch(activityIndex, pair.matchId)">
+                    <div class="match-image-label">{{ getEmojiNumber(i + 1) }}</div>
+                    <div class="match-image-box">
+                      <img [src]="pair.image" [alt]="'Imagem ' + (i + 1)" class="match-image">
+                    </div>
+                    <div class="match-check" *ngIf="selectedMatches[activityIndex + '-' + pair.matchId] !== undefined">✅</div>
+                  </div>
+                </div>
+                
+                <!-- Coluna de Textos -->
+                <div class="match-column match-texts-column">
+                  <button 
+                    class="match-text-btn"
+                    *ngFor="let pair of shuffledMatchPairs[activityIndex]?.texts || activity.matchPairs"
+                    [class.selected]="selectedMatches[activityIndex + '-' + pair.matchId] === pair.description"
+                    [class.correct]="selectedMatches[activityIndex + '-' + pair.matchId] === pair.description"
+                    (click)="selectMatch(activityIndex, pair.matchId, pair.description)">
+                    {{ pair.description }}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Fiscal do Meio Ambiente -->
+            <div class="environment-container" *ngIf="activity.type === 'environment-check' && activity.environmentImages">
+              <div class="environment-instruction">Veja cada imagem e diga se tem problema ambiental:</div>
+              <div class="environment-images">
+                <div class="environment-item" *ngFor="let envImg of activity.environmentImages; let i = index">
+                  <img [src]="envImg.image" [alt]="'Imagem ' + (i + 1)" class="environment-image">
+                  <div class="environment-options">
+                    <button 
+                      class="env-btn"
+                      [class.correct]="isEnvironmentCorrect(i) === true"
+                      [class.incorrect]="isEnvironmentCorrect(i) === false"
+                      (click)="checkEnvironment(activityIndex, i, true)">
+                        Tem problema
+                    </button>
+                    <button 
+                      class="env-btn"
+                      [class.correct]="isEnvironmentCorrect(i) === false"
+                      [class.incorrect]="isEnvironmentCorrect(i) === true"
+                      (click)="checkEnvironment(activityIndex, i, false)">
+                        Não tem problema
+                    </button>
+                  </div>
+                  <div class="problem-description" *ngIf="envImg.problemDescription && ((envImg.hasProblem && isEnvironmentCorrect(i) === true) || (!envImg.hasProblem && isEnvironmentCorrect(i) === false))">
+                    {{ envImg.problemDescription }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Atividade de Seleção de Sorvetes -->
+            <div class="ice-cream-selection-container" *ngIf="activity.type === 'ice-cream-selection' && activity.iceCreamSelection">
+              <div class="ice-cream-grid">
+                <div 
+                  class="ice-cream-item"
+                  [class.selected]="isIceCreamSelected(activityIndex, i)"
+                  [class.disabled]="!isIceCreamSelected(activityIndex, i) && getSelectedIceCreamCount(activityIndex) >= activity.iceCreamSelection!.targetCount"
+                  *ngFor="let i of getArray(activity.iceCreamSelection.totalIceCreams)"
+                  (click)="toggleIceCream(activityIndex, i)">
+                  <span class="ice-cream-emoji">{{ activity.iceCreamSelection.emoji }}</span>
+                </div>
+              </div>
+              <div class="ice-cream-counter">
+                <span>Selecionados: {{ getSelectedIceCreamCount(activityIndex) }} / {{ activity.iceCreamSelection.targetCount }}</span>
+                <span class="ice-cream-check" *ngIf="isIceCreamSelectionCorrect(activityIndex) === true">✅</span>
+              </div>
+              <div class="input-fields-inline" *ngIf="activity.inputFields">
+                <div class="input-field-group-inline" *ngFor="let field of activity.inputFields; let fieldIndex = index">
+                  <label class="input-label-inline">{{ field.label }}</label>
+                  <input 
+                    type="text"
+                    class="math-input-inline"
+                    [class.correct]="isInputFieldCorrect(activityIndex, fieldIndex) === true"
+                    [class.incorrect]="isInputFieldCorrect(activityIndex, fieldIndex) === false"
+                    [placeholder]="field.placeholder || ''"
+                    [value]="getInputValue(activityIndex, fieldIndex)"
+                    (input)="setInputValue(activityIndex, fieldIndex, $any($event.target).value)"
+                    [disabled]="completedActivities[activityIndex]">
+                  <span class="input-check" *ngIf="isInputFieldCorrect(activityIndex, fieldIndex) === true">✅</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Campos de Input (Fill Blank / Math Input) -->
+            <div class="input-container" *ngIf="(activity.type === 'fill-blank' || activity.type === 'math-input') && activity.inputFields">
+              <!-- Layout especial para Desafio 13: Tabela de multiplicação -->
+              <div *ngIf="activity.type === 'math-input' && activity.inputFields.length === 10" class="multiplication-table-container">
+                <div class="multiplication-table-simple">
+                  <div class="multiplication-table-row-simple" *ngFor="let field of activity.inputFields; let fieldIndex = index">
+                    <span class="multiplication-table-label">{{ field.label }}</span>
+                    <input 
+                      type="text"
+                      class="multiplication-table-input-simple"
+                      [class.correct]="isInputFieldCorrect(activityIndex, fieldIndex) === true"
+                      [class.incorrect]="isInputFieldCorrect(activityIndex, fieldIndex) === false"
+                      [placeholder]="field.placeholder || ''"
+                      [value]="getInputValue(activityIndex, fieldIndex)"
+                      (input)="setInputValue(activityIndex, fieldIndex, filterNumbers($any($event.target).value))"
+                      [disabled]="completedActivities[activityIndex]">
+                    <span class="input-check" *ngIf="isInputFieldCorrect(activityIndex, fieldIndex) === true">✅</span>
+                  </div>
+                </div>
+              </div>
+              <!-- Layout especial para Desafios 1 até 22, 28-33, 36, 41-45, 48, 51-55, 58 e 63-64 (apenas total e conta) -->
+              <div *ngIf="((activityIndex >= 0 && activityIndex <= 21) || (activityIndex >= 27 && activityIndex <= 32) || activityIndex === 35 || (activityIndex >= 40 && activityIndex <= 44) || activityIndex === 47 || (activityIndex >= 50 && activityIndex <= 54) || activityIndex === 57 || (activityIndex >= 62 && activityIndex <= 63) || (mission.id === 2 && (activityIndex === 14 || activityIndex === 15 || activityIndex === 21 || activityIndex === 22 || activityIndex === 24 || activityIndex === 25))) && activity.inputFields.length === 2 && !(mission.id === 2 && activityIndex === 3) && !(mission.id === 2 && activityIndex === 5) && !(mission.id === 2 && activityIndex === 13) && !(mission.id === 2 && activityIndex === 19)" class="math-input-special">
+                <div class="math-input-conta-row">
+                  <label class="input-label">{{ activity.inputFields[1].label }}</label>
+                  <div class="math-input-conta-fields">
+                    <input 
+                      type="text"
+                      class="math-input-conta-number"
+                      [class.correct]="isContaFieldCorrect(activityIndex, 0) === true"
+                      [class.incorrect]="isContaFieldCorrect(activityIndex, 0) === false"
+                      placeholder="__"
+                      maxlength="2"
+                      [value]="getContaFieldValue(activityIndex, 0)"
+                      (input)="setContaFieldValue(activityIndex, 0, filterNumbers($any($event.target).value))"
+                      [disabled]="completedActivities[activityIndex]">
+                    <span class="math-input-conta-operator">{{ (mission.id === 3 || activityIndex === 9) ? '➗' : ((mission.id === 2 && (activityIndex === 14 || activityIndex === 15 || activityIndex === 21 || activityIndex === 22 || activityIndex === 24 || activityIndex === 25)) ? '-' : 'x') }}</span>
+                    <input 
+                      type="text"
+                      class="math-input-conta-number"
+                      [class.correct]="isContaFieldCorrect(activityIndex, 1) === true"
+                      [class.incorrect]="isContaFieldCorrect(activityIndex, 1) === false"
+                      placeholder="__"
+                      maxlength="2"
+                      [value]="getContaFieldValue(activityIndex, 1)"
+                      (input)="setContaFieldValue(activityIndex, 1, filterNumbers($any($event.target).value))"
+                      [disabled]="completedActivities[activityIndex]">
+                    <span class="math-input-conta-operator">=</span>
+                    <input 
+                      type="text"
+                      class="math-input-conta-number"
+                      [class.correct]="isContaFieldCorrect(activityIndex, 2) === true"
+                      [class.incorrect]="isContaFieldCorrect(activityIndex, 2) === false"
+                      placeholder="__"
+                      maxlength="3"
+                      [value]="getContaFieldValue(activityIndex, 2)"
+                      (input)="setContaFieldValue(activityIndex, 2, filterNumbers($any($event.target).value))"
+                      [disabled]="completedActivities[activityIndex]">
+                  </div>
+                  <span class="input-check" *ngIf="isContaComplete(activityIndex) === true">✅</span>
+                </div>
+              </div>
+              <!-- Layout inline para questões com Resposta e Unidade na mesma linha (Desafios 83, 85, 87, 88, 98, 99, 100 da Missão 1, todas as questões da Missão 3, e todas as questões de math-input com 2 campos) -->
+              <div *ngIf="((activityIndex === 82 || activityIndex === 84 || activityIndex === 86 || activityIndex === 87 || activityIndex === 97 || activityIndex === 98 || activityIndex === 99) || (mission.id === 2 && activity.type === 'math-input' && activity.inputFields && activity.inputFields.length === 2 && (activityIndex === 3 || activityIndex === 5 || activityIndex === 13 || activityIndex === 19)) || (activity.type === 'math-input' && activity.inputFields && activity.inputFields.length === 2 && activity.inputFields[0].label === 'Resposta:' && activity.inputFields[1].label === 'Unidade:')) && activity.type === 'math-input' && activity.inputFields && activity.inputFields.length === 2" class="input-fields-inline">
+                <div class="input-field-group-inline" *ngFor="let field of activity.inputFields; let fieldIndex = index">
+                  <label class="input-label-inline" *ngIf="field.label">{{ field.label }}</label>
+                  <input 
+                    type="text"
+                    class="math-input-inline"
+                    [class.correct]="isInputFieldCorrect(activityIndex, fieldIndex) === true"
+                    [class.incorrect]="isInputFieldCorrect(activityIndex, fieldIndex) === false"
+                    [placeholder]="field.placeholder || '___'"
+                    [attr.maxlength]="mission.id === 2 ? '4' : '3'"
+                    [value]="getInputValue(activityIndex, fieldIndex)"
+                    (input)="setInputValue(activityIndex, fieldIndex, filterNumbers($any($event.target).value))"
+                    [disabled]="completedActivities[activityIndex]">
+                  <span class="input-check" *ngIf="isInputFieldCorrect(activityIndex, fieldIndex) === true">✅</span>
+                </div>
+              </div>
+              <!-- Layout padrão para outros math-input -->
+              <div *ngIf="!(((activityIndex >= 0 && activityIndex <= 21) || (activityIndex >= 27 && activityIndex <= 32) || activityIndex === 35 || (activityIndex >= 40 && activityIndex <= 44) || activityIndex === 47 || (activityIndex >= 50 && activityIndex <= 54) || activityIndex === 57 || (activityIndex >= 62 && activityIndex <= 63) || (mission.id === 2 && (activityIndex === 14 || activityIndex === 15 || activityIndex === 21 || activityIndex === 22 || activityIndex === 24 || activityIndex === 25))) && activity.inputFields.length === 2 && !(mission.id === 2 && activityIndex === 3) && !(mission.id === 2 && activityIndex === 5) && !(mission.id === 2 && activityIndex === 13) && !(mission.id === 2 && activityIndex === 19)) && !(activityIndex === 82 || activityIndex === 84 || activityIndex === 86 || activityIndex === 87 || activityIndex === 97 || activityIndex === 98 || activityIndex === 99) && !(mission.id === 3 && activity.type === 'math-input' && activity.inputFields && activity.inputFields.length === 2) && !(activity.type === 'math-input' && activity.inputFields && activity.inputFields.length === 2 && activity.inputFields[0].label === 'Resposta:' && activity.inputFields[1].label === 'Unidade:') && !(activity.type === 'math-input' && activity.inputFields.length === 10) && !(mission.id === 7 && activityIndex === 1 && activity.type === 'math-input' && activity.inputFields.length === 1)" class="input-fields">
+                <div class="input-field-group" *ngFor="let field of activity.inputFields; let fieldIndex = index">
+                  <label class="input-label">{{ field.label }}</label>
+                  <input 
+                    type="text"
+                    class="math-input"
+                    [class.correct]="isInputFieldCorrect(activityIndex, fieldIndex) === true"
+                    [class.incorrect]="isInputFieldCorrect(activityIndex, fieldIndex) === false"
+                    [placeholder]="field.placeholder || ''"
+                    [value]="getInputValue(activityIndex, fieldIndex)"
+                    (input)="setInputValue(activityIndex, fieldIndex, filterNumbers($any($event.target).value))"
+                    [attr.maxlength]="mission.id === 2 ? '4' : '3'"
+                    [disabled]="completedActivities[activityIndex]">
+                  <span class="input-check" *ngIf="isInputFieldCorrect(activityIndex, fieldIndex) === true">✅</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Operação C D U (Centena, Dezena, Unidade) -->
+            <div class="cdu-container" *ngIf="activity.type === 'cdu-operation' && activity.cduOperation">
+              <div class="cdu-instruction">Monte a conta usando Centena, Dezena e Unidade:</div>
+              <div class="cdu-operation">
+                <!-- Botões de Operador -->
+                <div class="cdu-operator-buttons-container">
+                  <div class="cdu-operator-buttons-label">Escolha a operação:</div>
+                  <div class="cdu-operator-buttons">
+                    <button 
+                      class="cdu-operator-btn"
+                      [class.selected]="getCDUOperator(activityIndex) === 'multiplication'"
+                      [class.correct]="isCDUOperatorCorrect(activityIndex) === true && getCDUOperator(activityIndex) === 'multiplication'"
+                      [class.incorrect]="isCDUOperatorCorrect(activityIndex) === false && getCDUOperator(activityIndex) === 'multiplication'"
+                      (click)="setCDUOperator(activityIndex, 'multiplication')"
+                      [disabled]="completedActivities[activityIndex]">
+                      × Multiplicar
+                    </button>
+                    <button 
+                      class="cdu-operator-btn"
+                      [class.selected]="getCDUOperator(activityIndex) === 'division'"
+                      [class.correct]="isCDUOperatorCorrect(activityIndex) === true && getCDUOperator(activityIndex) === 'division'"
+                      [class.incorrect]="isCDUOperatorCorrect(activityIndex) === false && getCDUOperator(activityIndex) === 'division'"
+                      (click)="setCDUOperator(activityIndex, 'division')"
+                      [disabled]="completedActivities[activityIndex]">
+                      ÷ Dividir
+                    </button>
+                    <button 
+                      class="cdu-operator-btn"
+                      [class.selected]="getCDUOperator(activityIndex) === 'addition'"
+                      [class.correct]="isCDUOperatorCorrect(activityIndex) === true && getCDUOperator(activityIndex) === 'addition'"
+                      [class.incorrect]="isCDUOperatorCorrect(activityIndex) === false && getCDUOperator(activityIndex) === 'addition'"
+                      (click)="setCDUOperator(activityIndex, 'addition')"
+                      [disabled]="completedActivities[activityIndex]">
+                      + Somar
+                    </button>
+                    <button 
+                      class="cdu-operator-btn"
+                      [class.selected]="getCDUOperator(activityIndex) === 'subtraction'"
+                      [class.correct]="isCDUOperatorCorrect(activityIndex) === true && getCDUOperator(activityIndex) === 'subtraction'"
+                      [class.incorrect]="isCDUOperatorCorrect(activityIndex) === false && getCDUOperator(activityIndex) === 'subtraction'"
+                      (click)="setCDUOperator(activityIndex, 'subtraction')"
+                      [disabled]="completedActivities[activityIndex]">
+                      − Diminuir
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="cdu-table">
+                  <!-- Cabeçalho com C D U -->
+                  <div class="cdu-header">
+                    <div class="cdu-header-cell"></div>
+                    <div class="cdu-header-cell">C</div>
+                    <div class="cdu-header-cell">D</div>
+                    <div class="cdu-header-cell">U</div>
+                  </div>
+                  
+                  <!-- Linha de "vai um" (carry) - apenas para adição, logo abaixo do cabeçalho -->
+                  <div class="cdu-carry-row" *ngIf="getCDUOperator(activityIndex) === 'addition'">
+                    <div class="cdu-label-cell"></div>
+                    <div class="cdu-carry-cell">
+                      <input 
+                        type="text" 
+                        class="cdu-carry-input"
+                        [class.correct]="isCDUCarryCorrect(activityIndex, 'centena') === true"
+                        [class.incorrect]="isCDUCarryCorrect(activityIndex, 'centena') === false && getCDUCarry(activityIndex, 'centena')"
+                        maxlength="1"
+                        pattern="[0-9]"
+                        [value]="getCDUCarry(activityIndex, 'centena')"
+                        (input)="setCDUCarry(activityIndex, 'centena', filterNumbers($any($event.target).value))"
+                        [disabled]="completedActivities[activityIndex]"
+                        placeholder="">
+                    </div>
+                    <div class="cdu-carry-cell">
+                      <input 
+                        type="text" 
+                        class="cdu-carry-input"
+                        [class.correct]="isCDUCarryCorrect(activityIndex, 'dezena') === true"
+                        [class.incorrect]="isCDUCarryCorrect(activityIndex, 'dezena') === false && getCDUCarry(activityIndex, 'dezena')"
+                        maxlength="1"
+                        pattern="[0-9]"
+                        [value]="getCDUCarry(activityIndex, 'dezena')"
+                        (input)="setCDUCarry(activityIndex, 'dezena', filterNumbers($any($event.target).value))"
+                        [disabled]="completedActivities[activityIndex]"
+                        placeholder="">
+                    </div>
+                    <div class="cdu-carry-cell-empty"></div>
+                  </div>
+                  
+                  <!-- Primeiro número -->
+                  <div class="cdu-row">
+                    <div class="cdu-label-cell"></div>
+                    <div class="cdu-input-cell">
+                      <input 
+                        type="text" 
+                        class="cdu-input"
+                        [class.correct]="isCDUNumber1Correct(activityIndex) === true"
+                        [class.incorrect]="isCDUNumber1Correct(activityIndex) === false && getCDUNumber1Value(activityIndex, 'centena')"
+                        maxlength="1"
+                        pattern="[0-9]"
+                        [value]="getCDUNumber1Value(activityIndex, 'centena')"
+                        (input)="setCDUNumber1Value(activityIndex, 'centena', filterNumbers($any($event.target).value))"
+                        [disabled]="completedActivities[activityIndex]"
+                        placeholder="0">
+                    </div>
+                    <div class="cdu-input-cell">
+                      <input 
+                        type="text" 
+                        class="cdu-input"
+                        [class.correct]="isCDUNumber1Correct(activityIndex) === true"
+                        [class.incorrect]="isCDUNumber1Correct(activityIndex) === false && getCDUNumber1Value(activityIndex, 'dezena')"
+                        maxlength="1"
+                        pattern="[0-9]"
+                        [value]="getCDUNumber1Value(activityIndex, 'dezena')"
+                        (input)="setCDUNumber1Value(activityIndex, 'dezena', filterNumbers($any($event.target).value))"
+                        [disabled]="completedActivities[activityIndex]"
+                        placeholder="0">
+                    </div>
+                    <div class="cdu-input-cell">
+                      <input 
+                        type="text" 
+                        class="cdu-input"
+                        [class.correct]="isCDUNumber1Correct(activityIndex) === true"
+                        [class.incorrect]="isCDUNumber1Correct(activityIndex) === false && getCDUNumber1Value(activityIndex, 'unidade')"
+                        maxlength="1"
+                        pattern="[0-9]"
+                        [value]="getCDUNumber1Value(activityIndex, 'unidade')"
+                        (input)="setCDUNumber1Value(activityIndex, 'unidade', filterNumbers($any($event.target).value))"
+                        [disabled]="completedActivities[activityIndex]"
+                        placeholder="0">
+                    </div>
+                  </div>
+                  
+                  <!-- Segundo número com operador na frente -->
+                  <div class="cdu-row">
+                    <div class="cdu-label-cell">
+                      <span class="cdu-operator-inline">{{ getOperatorSymbol(getCDUOperator(activityIndex)) || '?' }}</span>
+                    </div>
+                    <div class="cdu-input-cell">
+                      <input 
+                        type="text" 
+                        class="cdu-input"
+                        [class.correct]="isCDUNumber2Correct(activityIndex) === true"
+                        [class.incorrect]="isCDUNumber2Correct(activityIndex) === false && getCDUNumber2Value(activityIndex, 'centena')"
+                        maxlength="1"
+                        pattern="[0-9]"
+                        [value]="getCDUNumber2Value(activityIndex, 'centena')"
+                        (input)="setCDUNumber2Value(activityIndex, 'centena', filterNumbers($any($event.target).value))"
+                        [disabled]="completedActivities[activityIndex]"
+                        placeholder="0">
+                    </div>
+                    <div class="cdu-input-cell">
+                      <input 
+                        type="text" 
+                        class="cdu-input"
+                        [class.correct]="isCDUNumber2Correct(activityIndex) === true"
+                        [class.incorrect]="isCDUNumber2Correct(activityIndex) === false && getCDUNumber2Value(activityIndex, 'dezena')"
+                        maxlength="1"
+                        pattern="[0-9]"
+                        [value]="getCDUNumber2Value(activityIndex, 'dezena')"
+                        (input)="setCDUNumber2Value(activityIndex, 'dezena', filterNumbers($any($event.target).value))"
+                        [disabled]="completedActivities[activityIndex]"
+                        placeholder="0">
+                    </div>
+                    <div class="cdu-input-cell">
+                      <input 
+                        type="text" 
+                        class="cdu-input"
+                        [class.correct]="isCDUNumber2Correct(activityIndex) === true"
+                        [class.incorrect]="isCDUNumber2Correct(activityIndex) === false && getCDUNumber2Value(activityIndex, 'unidade')"
+                        maxlength="1"
+                        pattern="[0-9]"
+                        [value]="getCDUNumber2Value(activityIndex, 'unidade')"
+                        (input)="setCDUNumber2Value(activityIndex, 'unidade', filterNumbers($any($event.target).value))"
+                        [disabled]="completedActivities[activityIndex]"
+                        placeholder="0">
+                    </div>
+                  </div>
+                  
+                  <!-- Linha divisória -->
+                  <div class="cdu-line-row">
+                    <div class="cdu-line-cell"></div>
+                  </div>
+                  
+                  <!-- Resultado (inputs editáveis) -->
+                  <div class="cdu-row">
+                    <div class="cdu-label-cell"></div>
+                    <div class="cdu-input-cell">
+                      <input 
+                        type="text" 
+                        class="cdu-input"
+                        [class.correct]="isCDUCorrect(activityIndex) === true"
+                        [class.incorrect]="isCDUCorrect(activityIndex) === false && getCDUValue(activityIndex, 'centena')"
+                        maxlength="1"
+                        pattern="[0-9]"
+                        [value]="getCDUValue(activityIndex, 'centena')"
+                        (input)="setCDUValue(activityIndex, 'centena', filterNumbers($any($event.target).value))"
+                        [disabled]="completedActivities[activityIndex]"
+                        placeholder="0">
+                    </div>
+                    <div class="cdu-input-cell">
+                      <input 
+                        type="text" 
+                        class="cdu-input"
+                        [class.correct]="isCDUCorrect(activityIndex) === true"
+                        [class.incorrect]="isCDUCorrect(activityIndex) === false && getCDUValue(activityIndex, 'dezena')"
+                        maxlength="1"
+                        pattern="[0-9]"
+                        [value]="getCDUValue(activityIndex, 'dezena')"
+                        (input)="setCDUValue(activityIndex, 'dezena', filterNumbers($any($event.target).value))"
+                        [disabled]="completedActivities[activityIndex]"
+                        placeholder="0">
+                    </div>
+                    <div class="cdu-input-cell">
+                      <input 
+                        type="text" 
+                        class="cdu-input"
+                        [class.correct]="isCDUCorrect(activityIndex) === true"
+                        [class.incorrect]="isCDUCorrect(activityIndex) === false && getCDUValue(activityIndex, 'unidade')"
+                        maxlength="1"
+                        pattern="[0-9]"
+                        [value]="getCDUValue(activityIndex, 'unidade')"
+                        (input)="setCDUValue(activityIndex, 'unidade', filterNumbers($any($event.target).value))"
+                        [disabled]="completedActivities[activityIndex]"
+                        placeholder="0">
+                    </div>
+                  </div>
+                </div>
+                <div class="cdu-check" *ngIf="isCDUCorrect(activityIndex) === true">✅ Correto!</div>
+              </div>
+            </div>
+
+            <!-- Visual Multiplication (Emojis agrupados ou Grade de quadrados) -->
+            <div class="visual-multiplication-container" *ngIf="activity.type === 'visual-multiplication' && activity.visualMultiplication">
+              <div class="visual-content">
+                <!-- Grupos de Emojis -->
+                <div class="emoji-groups" *ngIf="activity.visualMultiplication.emojiGroups">
+                  <div class="emoji-group" *ngFor="let group of activity.visualMultiplication.emojiGroups">
+                    <div class="emoji-display">
+                      <span *ngFor="let i of getArray(group.count)" class="emoji-item">{{ group.emoji }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Grade de Quadrados -->
+                <div class="grid-container" *ngIf="activity.visualMultiplication.gridCells">
+                  <div class="grid-label">Observe os quadrados na malha:</div>
+                  <div class="math-grid" [style.grid-template-columns]="'repeat(' + (activity.visualMultiplication.gridCols || sqrt(activity.visualMultiplication.gridCells)) + ', 1fr)'">
+                    <div class="grid-cell" *ngFor="let i of getArray(activity.visualMultiplication.gridCells)">■</div>
+                  </div>
+                </div>
+
+                <!-- Campos de Input para completar a multiplicação -->
+                <div class="visual-input-fields">
+                  <div class="visual-input-conta-row">
+                    <label class="visual-input-label">Conta:</label>
+                    <div class="visual-input-conta-fields">
+                      <input 
+                        type="text"
+                        class="visual-math-input-conta-number"
+                        [class.correct]="isVisualMultiplicationContaFieldCorrect(activityIndex, 0) === true"
+                        [class.incorrect]="isVisualMultiplicationContaFieldCorrect(activityIndex, 0) === false"
+                        placeholder="__"
+                        maxlength="2"
+                        [value]="getVisualMultiplicationContaFieldValue(activityIndex, 0)"
+                        (input)="setVisualMultiplicationContaFieldValue(activityIndex, 0, filterNumbers($any($event.target).value))"
+                        [disabled]="completedActivities[activityIndex]">
+                      <span class="visual-input-conta-operator">x</span>
+                      <input 
+                        type="text"
+                        class="visual-math-input-conta-number"
+                        [class.correct]="isVisualMultiplicationContaFieldCorrect(activityIndex, 1) === true"
+                        [class.incorrect]="isVisualMultiplicationContaFieldCorrect(activityIndex, 1) === false"
+                        placeholder="__"
+                        maxlength="2"
+                        [value]="getVisualMultiplicationContaFieldValue(activityIndex, 1)"
+                        (input)="setVisualMultiplicationContaFieldValue(activityIndex, 1, filterNumbers($any($event.target).value))"
+                        [disabled]="completedActivities[activityIndex]">
+                      <span class="visual-input-conta-operator">=</span>
+                      <input 
+                        type="text"
+                        class="visual-math-input-conta-number"
+                        [class.correct]="isVisualMultiplicationContaFieldCorrect(activityIndex, 2) === true"
+                        [class.incorrect]="isVisualMultiplicationContaFieldCorrect(activityIndex, 2) === false"
+                        placeholder="__"
+                        maxlength="3"
+                        [value]="getVisualMultiplicationContaFieldValue(activityIndex, 2)"
+                        (input)="setVisualMultiplicationContaFieldValue(activityIndex, 2, filterNumbers($any($event.target).value))"
+                        [disabled]="completedActivities[activityIndex]">
+                    </div>
+                    <span class="input-check" *ngIf="isVisualMultiplicationContaComplete(activityIndex) === true">✅</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Desafio Bônus (quando perde todos os corações) -->
+      <!-- Animação de coração recuperado -->
+      <div class="heart-recovery-animation" *ngIf="showHeartAnimation">
+        <div class="heart-card">
+          <div class="heart-icon">❤️</div>
+          <div class="heart-message">Vida recuperada!</div>
+        </div>
+      </div>
+
+      <!-- Card de Perda de Moedas -->
+      <div class="coins-loss-animation" *ngIf="showCoinsLossCard">
+        <div class="coins-loss-card">
+          <div class="coins-loss-icon">💸</div>
+          <div class="coins-loss-title">Ops! Resposta Incorreta</div>
+          <div class="coins-loss-amount">
+            <span class="coins-icon">💎</span>
+            <span class="coins-number">-{{ coinsLost }}</span>
+          </div>
+          <div class="coins-loss-hearts">
+            <div class="hearts-label">❤️ Vidas</div>
+            <div class="hearts-display">
+              <span *ngFor="let hasHeart of getCurrentHeartsArray()" class="heart-display" [class.full]="hasHeart" [class.empty]="!hasHeart">
+                {{ hasHeart ? '❤️' : '🤍' }}
+              </span>
+            </div>
+          </div>
+          <div class="coins-loss-message">Tente novamente! 😊</div>
+          <div class="coins-flying coin-1">
+            <span class="coin">💎</span>
+          </div>
+          <div class="coins-flying coin-2">
+            <span class="coin">💎</span>
+          </div>
+          <div class="coins-flying coin-3">
+            <span class="coin">💎</span>
+          </div>
+          <div class="coins-flying coin-4">
+            <span class="coin">💎</span>
+          </div>
+          <div class="coins-flying coin-5">
+            <span class="coin">💎</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Popup Modal do Desafio Bônus -->
+      <div class="bonus-popup-overlay" *ngIf="showBonusChallenge && !bonusChallengeCompleted && mission" (click)="closeBonusPopup()">
+        <div class="bonus-popup" (click)="$event.stopPropagation()">
+          <div class="bonus-popup-header">
+            <h2>💪 Desafio Bônus!</h2>
+            <button class="close-popup-btn" (click)="closeBonusPopup()" *ngIf="false">✕</button>
+          </div>
+          <div class="bonus-popup-content">
+            <p class="bonus-warning">Você perdeu todos os corações! 😢</p>
+            <p class="bonus-message">Mas não desista! Responda esta pergunta para recuperar um coração! ❤️</p>
+            <div class="bonus-question" *ngIf="mission.bonusQuestion">
+              <p><strong>{{ mission.bonusQuestion }}</strong></p>
+              <div class="options-container">
+                <button 
+                  class="option-btn" 
+                  [class.selected]="bonusAnswerSelected === 'Sim'"
+                  (click)="selectBonusAnswer('Sim')">
+                  Sim
+                </button>
+                <button 
+                  class="option-btn"
+                  [class.selected]="bonusAnswerSelected === 'Não'"
+                  (click)="selectBonusAnswer('Não')">
+                  Não
+                </button>
+              </div>
+              <button 
+                class="btn-primary" 
+                [disabled]="!bonusAnswerSelected"
+                (click)="completeBonusChallenge()"
+                style="margin-top: 15px;">
+                Responder
+              </button>
+            </div>
+            <div class="bonus-question" *ngIf="!mission.bonusQuestion">
+              <p><strong>O que é multiplicação?</strong></p>
+              <div class="options-container">
+                <button 
+                  class="option-btn"
+                  [class.selected]="bonusAnswerSelected === 'Somar um número várias vezes'"
+                  (click)="selectBonusAnswer('Somar um número várias vezes')">
+                  Somar um número várias vezes
+                </button>
+                <button 
+                  class="option-btn"
+                  [class.selected]="bonusAnswerSelected === 'Subtrair números'"
+                  (click)="selectBonusAnswer('Subtrair números')">
+                  Subtrair números
+                </button>
+              </div>
+              <button 
+                class="btn-primary" 
+                [disabled]="!bonusAnswerSelected"
+                (click)="completeBonusChallenge()"
+                style="margin-top: 15px;">
+                Responder
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Seção: Resumo Final -->
+      <section class="mission-section success-section" id="success-section" style="display: none;">
+        <h2>🎉 Parabéns, Anthony!</h2>
+        <div class="success-message">
+          <p>{{ mission.successMessage }}</p>
+          <div class="reward-info" *ngIf="correctAnswers > 0">
+            <p>✅ Você acertou {{ correctAnswers }} de {{ totalQuestions }} perguntas!</p>
+          </div>
+        </div>
+        <button class="btn-primary" (click)="nextMission()" *ngIf="mission">
+          ➡️ Próxima Missão
+        </button>
+      </section>
+      </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Card Final - Todas as Missões Completadas -->
+<div class="final-card-overlay" *ngIf="showFinalCard" (click)="closeFinalCard()">
+  <div class="final-card" (click)="$event.stopPropagation()">
+    <div class="final-card-content">
+      <div class="final-card-header">
+        <h1 class="final-title">🎉 Parabéns, Anthony!</h1>
+        <div class="final-subtitle">Você completou todas as missões!</div>
+        <div class="final-message">Você é um verdadeiro mestre da matemática! 🏆</div>
+      </div>
+      
+      <div class="final-guardian-container">
+        <div class="final-avatar-wrapper">
+          <app-avatar></app-avatar>
+        </div>
+        <div class="final-guardian-title">🔢 Mestre da Matemática 🔢</div>
+      </div>
+      
+      <div class="final-stats">
+        <div class="final-stat-item">
+          <span class="final-stat-icon">⭐</span>
+          <span class="final-stat-label">Nível {{ gameService.getPlayer().level }}</span>
+        </div>
+        <div class="final-stat-item">
+          <span class="final-stat-icon">💎</span>
+          <span class="final-stat-label">{{ gameService.getPlayer().coins }} Moedas</span>
+        </div>
+        <div class="final-stat-item">
+          <span class="final-stat-icon">🎁</span>
+          <span class="final-stat-label">{{ gameService.getPlayer().items.length }} Itens</span>
+        </div>
+      </div>
+      
+      <button class="final-card-btn" (click)="closeFinalCard()">
+        🏠 Voltar para Missões
+      </button>
+    </div>
+  </div>
+</div>
+

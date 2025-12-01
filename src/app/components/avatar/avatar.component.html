@@ -1,0 +1,30 @@
+<div class="avatar-container">
+  <div class="avatar-label">Mestre Anthony</div>
+  <div class="avatar-wrapper">
+    <div class="avatar-roblox">
+      <!-- Corpo base -->
+      <div class="body-part body-base"></div>
+      
+      <!-- Cabeça -->
+      <div class="body-part head">
+        <!-- Olhos -->
+        <div class="eye eye-left"></div>
+        <div class="eye eye-right"></div>
+        <!-- Sorriso (aparece quando completar todas as missões - nível 4) -->
+        <div class="smile" *ngIf="player.level >= 4"></div>
+      </div>
+      
+      <!-- Itens conquistados -->
+      <div class="item calculator-multiply" *ngIf="hasItem('calculator_multiply')"></div>
+      <div class="item ruler-measure" *ngIf="hasItem('ruler_measure')"></div>
+      <div class="item divide-symbol" *ngIf="hasItem('divide_symbol')"></div>
+      <div class="item math-badge" *ngIf="hasItem('math_badge')"></div>
+      
+      <!-- Efeito de brilho ao ganhar novo item -->
+      <div class="sparkle" *ngIf="player.items.length > 0">✨</div>
+    </div>
+  </div>
+  <div class="avatar-name">{{ player.name }}</div>
+  <div class="avatar-level">Nível {{ player.level }}</div>
+</div>
+
