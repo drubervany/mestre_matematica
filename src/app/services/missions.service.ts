@@ -56,8 +56,7 @@ Vamos lá, você consegue! 🌟`,
           question: "1️⃣ a) 1 carro tem quantas rodas?",
           reward: "⭐ Você ganhou +5 XP!",
           inputFields: [
-            { label: "", correctValue: "4", placeholder: "___" },
-            { label: "", correctValue: "rodas", placeholder: "___" }
+            { label: "", correctValue: "4", placeholder: "___" }
           ]
         },
         {
@@ -67,8 +66,7 @@ Vamos lá, você consegue! 🌟`,
           question: "2️⃣ b) 2 carros têm quantas rodas?",
           reward: "⭐ Você ganhou +5 XP!",
           inputFields: [
-            { label: "", correctValue: "8", placeholder: "___" },
-            { label: "", correctValue: "rodas", placeholder: "___" }
+            { label: "", correctValue: "8", placeholder: "___" }
           ]
         },
         {
@@ -78,8 +76,7 @@ Vamos lá, você consegue! 🌟`,
           question: "3️⃣ Quantas rodas têm 3 carros?",
           reward: "💰 Você ganhou +5 moedas!",
           inputFields: [
-            { label: "", correctValue: "12", placeholder: "___" },
-            { label: "", correctValue: "rodas", placeholder: "___" }
+            { label: "", correctValue: "12", placeholder: "___" }
           ]
         },
         {
@@ -89,8 +86,7 @@ Vamos lá, você consegue! 🌟`,
           question: "4️⃣ Quantas rodas têm 4 carros?",
           reward: "💰 Você ganhou +5 moedas!",
           inputFields: [
-            { label: "", correctValue: "16", placeholder: "___" },
-            { label: "", correctValue: "rodas", placeholder: "___" }
+            { label: "", correctValue: "16", placeholder: "___" }
           ]
         },
         {
@@ -100,8 +96,7 @@ Vamos lá, você consegue! 🌟`,
           question: "5️⃣ Quantas rodas têm 5 carros?",
           reward: "💰 Você ganhou +5 moedas!",
           inputFields: [
-            { label: "", correctValue: "20", placeholder: "___" },
-            { label: "", correctValue: "rodas", placeholder: "___" }
+            { label: "", correctValue: "20", placeholder: "___" }
           ]
         },
         {
@@ -111,8 +106,7 @@ Vamos lá, você consegue! 🌟`,
           question: "6️⃣ Quantas rodas têm 6 carros?",
           reward: "💰 Você ganhou +5 moedas!",
           inputFields: [
-            { label: "", correctValue: "24", placeholder: "___" },
-            { label: "", correctValue: "rodas", placeholder: "___" }
+            { label: "", correctValue: "24", placeholder: "___" }
           ]
         },
         {
@@ -122,8 +116,7 @@ Vamos lá, você consegue! 🌟`,
           question: "7️⃣ a) Quantas pessoas cabem em 2 carros iguais a esse?",
           reward: "💰 Você ganhou +5 moedas!",
           inputFields: [
-            { label: "", correctValue: "10", placeholder: "___" },
-            { label: "", correctValue: "pessoas", placeholder: "___" }
+            { label: "", correctValue: "10", placeholder: "___" }
           ]
         },
         {
@@ -134,7 +127,6 @@ Vamos lá, você consegue! 🌟`,
           reward: "💰 Você ganhou +5 moedas!",
           inputFields: [
             { label: "", correctValue: "15", placeholder: "___" },
-            { label: "", correctValue: "pessoas", placeholder: "___" }
           ]
         },
         {
@@ -144,8 +136,7 @@ Vamos lá, você consegue! 🌟`,
           question: "9️⃣ c) Quantas pessoas cabem em 4 carros iguais a esse?",
           reward: "💰 Você ganhou +5 moedas!",
           inputFields: [
-            { label: "", correctValue: "20", placeholder: "___" },
-            { label: "", correctValue: "pessoas", placeholder: "___" }
+            { label: "", correctValue: "20", placeholder: "___" }
           ]
         },
         {
@@ -156,7 +147,6 @@ Vamos lá, você consegue! 🌟`,
           reward: "⭐ Você ganhou +5 XP!",
           inputFields: [
             { label: "", correctValue: "6", placeholder: "___" },
-            { label: "", correctValue: "carros", placeholder: "___" }
           ]
         },
         {
@@ -167,7 +157,6 @@ Vamos lá, você consegue! 🌟`,
           reward: "💰 Você ganhou +5 moedas!",
           inputFields: [
             { label: "", correctValue: "18", placeholder: "___" },
-            { label: "", correctValue: "vagas", placeholder: "___" }
           ]
         },
         {
@@ -189,7 +178,6 @@ Vamos lá, você consegue! 🌟`,
           reward: "⭐ Você ganhou +5 XP!",
           inputFields: [
             { label: "", correctValue: "3", placeholder: "___" },
-            { label: "", correctValue: "bombons", placeholder: "___" }
           ]
         },
         {
@@ -200,7 +188,6 @@ Vamos lá, você consegue! 🌟`,
           reward: "💰 Você ganhou +5 moedas!",
           inputFields: [
             { label: "", correctValue: "18", placeholder: "___" },
-            { label: "", correctValue: "bombons", placeholder: "___" }
           ]
         },
         {
@@ -211,7 +198,6 @@ Vamos lá, você consegue! 🌟`,
           reward: "💰 Você ganhou +5 moedas!",
           inputFields: [
             { label: "", correctValue: "15", placeholder: "___" },
-            { label: "", correctValue: "bombons", placeholder: "___" }
           ]
         },
         {
@@ -222,7 +208,6 @@ Vamos lá, você consegue! 🌟`,
           reward: "💰 Você ganhou +5 moedas!",
           inputFields: [
             { label: "", correctValue: "25", placeholder: "___" },
-            { label: "", correctValue: "bombons", placeholder: "___" }
           ]
         },
         {
@@ -245,7 +230,6 @@ Vamos lá, você consegue! 🌟`,
           reward: "💰 Você ganhou +5 moedas!",
           inputFields: [
             { label: "", correctValue: "20", placeholder: "___" },
-            { label: "", correctValue: "reais", placeholder: "___" }
           ]
         },
         {
@@ -256,7 +240,6 @@ Vamos lá, você consegue! 🌟`,
           reward: "💰 Você ganhou +5 moedas!",
           inputFields: [
             { label: "", correctValue: "15", placeholder: "___" },
-            { label: "", correctValue: "reais", placeholder: "___" }
           ]
         },
         {
@@ -267,7 +250,6 @@ Vamos lá, você consegue! 🌟`,
           reward: "⭐ Você ganhou +5 XP!",
           inputFields: [
             { label: "", correctValue: "2", placeholder: "___" },
-            { label: "", correctValue: "sabonetes", placeholder: "___" }
           ]
         },
         {
@@ -278,7 +260,6 @@ Vamos lá, você consegue! 🌟`,
           reward: "💰 Você ganhou +5 moedas!",
           inputFields: [
             { label: "", correctValue: "4", placeholder: "___" },
-            { label: "", correctValue: "sabonetes", placeholder: "___" }
           ]
         },
         {
@@ -289,7 +270,6 @@ Vamos lá, você consegue! 🌟`,
           reward: "💰 Você ganhou +5 moedas!",
           inputFields: [
             { label: "", correctValue: "6", placeholder: "___" },
-            { label: "", correctValue: "sabonetes", placeholder: "___" }
           ]
         },
         {
@@ -375,7 +355,6 @@ Vamos lá, você consegue! 🌟`,
           reward: "⭐ Você ganhou +10 XP!",
           inputFields: [
             { label: "", correctValue: "16", placeholder: "___" },
-            { label: "", correctValue: "maneiras", placeholder: "___" }
           ]
         },
         {
@@ -386,7 +365,6 @@ Vamos lá, você consegue! 🌟`,
           reward: "💰 Você ganhou +5 moedas!",
           inputFields: [
             { label: "", correctValue: "10", placeholder: "___" },
-            { label: "", correctValue: "reais", placeholder: "___" }
           ]
         },
         {
@@ -397,7 +375,6 @@ Vamos lá, você consegue! 🌟`,
           reward: "💰 Você ganhou +5 moedas!",
           inputFields: [
             { label: "", correctValue: "20", placeholder: "___" },
-            { label: "", correctValue: "reais", placeholder: "___" }
           ]
         },
         {
@@ -408,7 +385,6 @@ Vamos lá, você consegue! 🌟`,
           reward: "⭐ Você ganhou +5 XP!",
           inputFields: [
             { label: "", correctValue: "3", placeholder: "___" },
-            { label: "", correctValue: "pés", placeholder: "___" }
           ]
         },
         {
@@ -419,7 +395,6 @@ Vamos lá, você consegue! 🌟`,
           reward: "💰 Você ganhou +5 moedas!",
           inputFields: [
             { label: "", correctValue: "6", placeholder: "___" },
-            { label: "", correctValue: "pés", placeholder: "___" }
           ]
         },
         {
@@ -430,7 +405,6 @@ Vamos lá, você consegue! 🌟`,
           reward: "💰 Você ganhou +5 moedas!",
           inputFields: [
             { label: "", correctValue: "9", placeholder: "___" },
-            { label: "", correctValue: "pés", placeholder: "___" }
           ]
         },
         {
@@ -465,7 +439,6 @@ Vamos lá, você consegue! 🌟`,
           reward: "⭐ Você ganhou +10 XP!",
           inputFields: [
             { label: "", correctValue: "12", placeholder: "___" },
-            { label: "", correctValue: "maneiras", placeholder: "___" }
           ]
         },
         {
@@ -544,7 +517,6 @@ Vamos lá, você consegue! 🌟`,
           reward: "💰 Você ganhou +5 moedas!",
           inputFields: [
             { label: "", correctValue: "15", placeholder: "___" },
-            { label: "", correctValue: "reais", placeholder: "___" }
           ]
         },
         {
@@ -555,7 +527,6 @@ Vamos lá, você consegue! 🌟`,
           reward: "💰 Você ganhou +5 moedas!",
           inputFields: [
             { label: "", correctValue: "30", placeholder: "___" },
-            { label: "", correctValue: "reais", placeholder: "___" }
           ]
         },
         {
@@ -623,7 +594,6 @@ Vamos lá, você consegue! 🌟`,
           reward: "⭐ Você ganhou +10 XP!",
           inputFields: [
             { label: "", correctValue: "16", placeholder: "___" },
-            { label: "", correctValue: "maneiras", placeholder: "___" }
           ]
         },
         {
@@ -668,7 +638,6 @@ Vamos lá, você consegue! 🌟`,
           reward: "💰 Você ganhou +5 moedas!",
           inputFields: [
             { label: "", correctValue: "20", placeholder: "___" },
-            { label: "", correctValue: "reais", placeholder: "___" }
           ]
         },
         {
@@ -679,7 +648,6 @@ Vamos lá, você consegue! 🌟`,
           reward: "💰 Você ganhou +5 moedas!",
           inputFields: [
             { label: "", correctValue: "44", placeholder: "___" },
-            { label: "", correctValue: "reais", placeholder: "___" }
           ]
         },
         {
@@ -747,7 +715,6 @@ Vamos lá, você consegue! 🌟`,
           reward: "⭐ Você ganhou +10 XP!",
           inputFields: [
             { label: "", correctValue: "20", placeholder: "___" },
-            { label: "", correctValue: "maneiras", placeholder: "___" }
           ]
         },
         {
@@ -826,7 +793,6 @@ Vamos lá, você consegue! 🌟`,
           reward: "💰 Você ganhou +5 moedas!",
           inputFields: [
             { label: "", correctValue: "25", placeholder: "___" },
-            { label: "", correctValue: "reais", placeholder: "___" }
           ]
         },
         {
@@ -837,7 +803,6 @@ Vamos lá, você consegue! 🌟`,
           reward: "💰 Você ganhou +5 moedas!",
           inputFields: [
             { label: "", correctValue: "50", placeholder: "___" },
-            { label: "", correctValue: "reais", placeholder: "___" }
           ]
         },
         {
@@ -1434,7 +1399,6 @@ Vamos lá, você consegue! 🌟`,
           reward: "💰 Você ganhou +5 moedas!",
           inputFields: [
             { label: "", correctValue: "15", placeholder: "___" },
-            { label: "", correctValue: "pessoas", placeholder: "___" }
           ]
         },
         {
@@ -1445,7 +1409,6 @@ Vamos lá, você consegue! 🌟`,
           reward: "💰 Você ganhou +5 moedas!",
           inputFields: [
             { label: "", correctValue: "7", placeholder: "___" },
-            { label: "", correctValue: "bombons", placeholder: "___" }
           ]
         },
         {
@@ -1588,7 +1551,6 @@ Vamos lá, você consegue! 🌟`,
           reward: "💰 Você ganhou +5 moedas!",
           inputFields: [
             { label: "", correctValue: "6", placeholder: "___" },
-            { label: "", correctValue: "reais", placeholder: "___" }
           ]
         },
         {
@@ -1599,7 +1561,6 @@ Vamos lá, você consegue! 🌟`,
           reward: "💰 Você ganhou +5 moedas!",
           inputFields: [
             { label: "", correctValue: "12", placeholder: "___" },
-            { label: "", correctValue: "reais", placeholder: "___" }
           ]
         },
         {
@@ -1654,7 +1615,6 @@ Vamos lá, você consegue! 🌟`,
           reward: "💰 Você ganhou +5 moedas!",
           inputFields: [
             { label: "", correctValue: "15", placeholder: "___" },
-            { label: "", correctValue: "reais", placeholder: "___" }
           ]
         },
         {
@@ -1665,7 +1625,6 @@ Vamos lá, você consegue! 🌟`,
           reward: "💰 Você ganhou +5 moedas!",
           inputFields: [
             { label: "", correctValue: "4", placeholder: "___" },
-            { label: "", correctValue: "reais", placeholder: "___" }
           ]
         },
         {
@@ -1852,7 +1811,6 @@ Vamos lá, você consegue! 🌟`,
           reward: "💰 Você ganhou +5 moedas!",
           inputFields: [
             { label: "", correctValue: "15", placeholder: "___" },
-            { label: "", correctValue: "reais", placeholder: "___" }
           ]
         },
         {
@@ -2637,7 +2595,6 @@ Vamos lá, você consegue! 🌟`,
           reward: "⭐ Você ganhou +5 XP!",
           inputFields: [
             { label: "", correctValue: "3", placeholder: "___" },
-            { label: "", correctValue: "maneiras", placeholder: "___" }
           ]
         },
         {
@@ -2648,7 +2605,6 @@ Vamos lá, você consegue! 🌟`,
           reward: "⭐ Você ganhou +5 XP!",
           inputFields: [
             { label: "", correctValue: "4", placeholder: "___" },
-            { label: "", correctValue: "maneiras", placeholder: "___" }
           ]
         },
         {

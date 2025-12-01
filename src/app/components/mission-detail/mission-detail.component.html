@@ -70,8 +70,8 @@
               <div class="image-description-text">{{ activity.imageDescription }}</div>
             </div>
             
-            <!-- Layout especial para Desafios 1, 2, 3, 4 e 5: pergunta com input inline -->
-            <div *ngIf="(activityIndex === 0 || activityIndex === 1 || activityIndex === 2 || activityIndex === 3 || activityIndex === 4) && activity.type === 'math-input' && activity.inputFields && activity.inputFields.length > 0 && activity.inputFields.length !== 10 && !(mission.id === 7 && activityIndex === 1)" class="activity-question-with-total">
+            <!-- Layout especial para Desafios 3, 4 e 5: pergunta com input inline -->
+            <div *ngIf="(activityIndex === 2 || activityIndex === 3 || activityIndex === 4) && activity.type === 'math-input' && activity.inputFields && activity.inputFields.length > 0 && activity.inputFields.length !== 10" class="activity-question-with-total">
               <span class="activity-question-inline">{{ activity.question }}</span>
               <input 
                 type="text"
@@ -100,7 +100,7 @@
             </div>
             
             <!-- Pergunta normal para outras atividades (incluindo Desafio 6) -->
-            <div class="activity-question" *ngIf="!((activityIndex === 0 || activityIndex === 1 || activityIndex === 2 || activityIndex === 3 || activityIndex === 4) && activity.type === 'math-input' && activity.inputFields && activity.inputFields.length > 0 && activity.inputFields.length !== 10 && !(mission.id === 7 && activityIndex === 1)) && !hasInlineEqualsQuestion(activityIndex) && !(mission.id === 7 && activityIndex === 1 && activity.type === 'math-input' && activity.inputFields?.length === 1)">
+            <div class="activity-question" *ngIf="!((activityIndex === 2 || activityIndex === 3 || activityIndex === 4) && activity.type === 'math-input' && activity.inputFields && activity.inputFields.length > 0 && activity.inputFields.length !== 10) && !hasInlineEqualsQuestion(activityIndex) && !(mission.id === 7 && activityIndex === 1 && activity.type === 'math-input' && activity.inputFields?.length === 1)">
               {{ activity.question }}
             </div>
             <!-- Layout especial para Desafio 2 (Missão 7): Questão com input inline -->
@@ -433,6 +433,38 @@
                         placeholder="">
                     </div>
                     <div class="cdu-carry-cell-empty"></div>
+                  </div>
+                  
+                  <!-- Linha de "emprestar" (borrow) - apenas para subtração, logo abaixo do cabeçalho -->
+                  <div class="cdu-borrow-row" *ngIf="getCDUOperator(activityIndex) === 'subtraction'">
+                    <div class="cdu-label-cell"></div>
+                    <div class="cdu-borrow-cell">
+                      <input 
+                        type="text" 
+                        class="cdu-borrow-input"
+                        [class.correct]="isCDUBorrowCorrect(activityIndex, 'centena') === true"
+                        [class.incorrect]="isCDUBorrowCorrect(activityIndex, 'centena') === false && getCDUBorrow(activityIndex, 'centena')"
+                        maxlength="1"
+                        pattern="[0-9]"
+                        [value]="getCDUBorrow(activityIndex, 'centena')"
+                        (input)="setCDUBorrow(activityIndex, 'centena', filterNumbers($any($event.target).value))"
+                        [disabled]="completedActivities[activityIndex]"
+                        placeholder="">
+                    </div>
+                    <div class="cdu-borrow-cell">
+                      <input 
+                        type="text" 
+                        class="cdu-borrow-input"
+                        [class.correct]="isCDUBorrowCorrect(activityIndex, 'dezena') === true"
+                        [class.incorrect]="isCDUBorrowCorrect(activityIndex, 'dezena') === false && getCDUBorrow(activityIndex, 'dezena')"
+                        maxlength="1"
+                        pattern="[0-9]"
+                        [value]="getCDUBorrow(activityIndex, 'dezena')"
+                        (input)="setCDUBorrow(activityIndex, 'dezena', filterNumbers($any($event.target).value))"
+                        [disabled]="completedActivities[activityIndex]"
+                        placeholder="">
+                    </div>
+                    <div class="cdu-borrow-cell-empty"></div>
                   </div>
                   
                   <!-- Primeiro número -->

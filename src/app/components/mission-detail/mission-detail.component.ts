@@ -25,6 +25,7 @@ export class MissionDetailComponent implements OnInit {
   cduNumber2Answers: { [key: string]: { centena: string; dezena: string; unidade: string } } = {}; // Respostas C D U do segundo número
   cduOperatorAnswers: { [key: string]: string } = {}; // Operador escolhido pelo usuário ('addition', 'subtraction', 'multiplication', 'division')
   cduCarryAnswers: { [key: string]: { centena: string; dezena: string } } = {}; // Respostas de "vai um" (carry) para adição
+  cduBorrowAnswers: { [key: string]: { centena: string; dezena: string } } = {}; // Respostas de "emprestar" (borrow) para subtração
   contaAnswers: { [key: string]: { num1: string; num2: string; result: string } } = {}; // Respostas da conta (Desafio 1)
   visualMultiplicationContaAnswers: { [key: string]: string[] } = {}; // Respostas da conta para visual multiplication (3 campos: num1, num2, result)
   iceCreamSelections: { [key: string]: boolean[] } = {}; // Seleções de sorvetes (array de booleanos)
@@ -79,6 +80,7 @@ export class MissionDetailComponent implements OnInit {
     this.cduNumber2Answers = {};
     this.cduOperatorAnswers = {};
     this.cduCarryAnswers = {};
+    this.cduBorrowAnswers = {};
     this.visualMultiplicationContaAnswers = {};
     this.iceCreamSelections = {};
     
@@ -801,9 +803,108 @@ export class MissionDetailComponent implements OnInit {
       }
     } else if (activity.type === 'fill-blank' || activity.type === 'math-input') {
       if (activity.inputFields) {
-        // Verificar se todos os campos estão preenchidos
+        // Para Desafios 1 e 2 (activityIndex 0-1), usar validação de conta em vez de input simples
+        const isContaCase = (activityIndex === 0 || activityIndex === 1);
+        // Para Desafios 3, 4 e 5 (activityIndex 2-4), validar apenas o campo 0 (número)
+        const isSpecialCase = (activityIndex === 2 || activityIndex === 3 || activityIndex === 4);
+        
+        if (isContaCase) {
+          // Validar usando conta (num1 x num2 = result)
+          const key = `${activityIndex}-conta`;
+          const conta = this.contaAnswers[key];
+          
+          if (!conta || !conta.num1 || !conta.num2 || !conta.result) {
+            return; // Ainda não preencheu tudo
+          }
+          
+          // Obter valores corretos usando o método isContaFieldCorrect
+          const correctValues = this.getContaCorrectValues(activityIndex);
+          if (!correctValues) {
+            // Se não conseguir determinar os valores corretos, usar validação padrão apenas do primeiro campo
+            const fieldsToCheck = [0];
+            let allFilled = true;
+            fieldsToCheck.forEach((fieldIndex) => {
+              const key = this.getInputKey(activityIndex, fieldIndex);
+              const userAnswer = this.inputAnswers[key] || '';
+              if (!userAnswer.trim()) {
+                allFilled = false;
+              }
+            });
+            
+            if (!allFilled) {
+              return;
+            }
+            
+            // Validar apenas o primeiro campo (número)
+            const field = activity.inputFields[0];
+            const key = this.getInputKey(activityIndex, 0);
+            const userAnswer = this.inputAnswers[key] || '';
+            const correctValue = String(field.correctValue).trim().toLowerCase();
+            const userValue = userAnswer.trim().toLowerCase();
+            
+            const allCorrect = userValue === correctValue;
+            
+            if (allCorrect && !this.completedActivities[activityIndex]) {
+              this.completedActivities[activityIndex] = true;
+              this.correctAnswers++;
+              this.processActivityReward(activityIndex);
+              this.checkAllActivitiesCompleted();
+            } else if (!allCorrect && this.completedActivities[activityIndex]) {
+              this.completedActivities[activityIndex] = false;
+              this.correctAnswers--;
+            } else if (!allCorrect && !this.completedActivities[activityIndex]) {
+              this.wrongAnswers++;
+              this.gameService.loseHeart();
+              this.checkForBonusChallenge();
+            }
+            return;
+          }
+          
+          const { correctNum1, correctNum2, correctResult } = correctValues;
+          const userNum1 = conta.num1.trim();
+          const userNum2 = conta.num2.trim();
+          const userResult = conta.result.trim();
+          
+          // Verificar se é subtração ou divisão (não comutativas)
+          const isSubtraction = this.mission.id === 2 && (activityIndex === 14 || activityIndex === 15 || activityIndex === 21 || activityIndex === 22 || activityIndex === 24 || activityIndex === 25);
+          const isDivision = (this.mission.id === 3 || activityIndex === 9);
+          
+          let allCorrect: boolean;
+          if (isSubtraction || isDivision) {
+            // Subtração e divisão não são comutativas - ordem importa
+            allCorrect = userNum1 === correctNum1 && userNum2 === correctNum2 && userResult === correctResult;
+          } else {
+            // Multiplicação é comutativa: a ordem dos fatores não altera o resultado
+            // Aceita tanto "2 x 8 = 16" quanto "8 x 2 = 16"
+            const isCorrectOrder = userNum1 === correctNum1 && userNum2 === correctNum2 && userResult === correctResult;
+            const isCommutativeOrder = userNum1 === correctNum2 && userNum2 === correctNum1 && userResult === correctResult;
+            allCorrect = isCorrectOrder || isCommutativeOrder;
+          }
+          
+          if (allCorrect && !this.completedActivities[activityIndex]) {
+            this.completedActivities[activityIndex] = true;
+            this.correctAnswers++;
+            this.processActivityReward(activityIndex);
+            this.checkAllActivitiesCompleted();
+          } else if (!allCorrect && this.completedActivities[activityIndex]) {
+            this.completedActivities[activityIndex] = false;
+            this.correctAnswers--;
+          } else if (!allCorrect && !this.completedActivities[activityIndex]) {
+            // Erro ao tentar completar - perde uma vida
+            this.wrongAnswers++;
+            this.gameService.loseHeart();
+            this.checkForBonusChallenge();
+          }
+          return;
+        }
+        
+        const fieldsToCheck = isSpecialCase ? [0] : null; // null significa verificar todos
+        
+        // Verificar se todos os campos relevantes estão preenchidos
         let allFilled = true;
-        activity.inputFields.forEach((field, fieldIndex) => {
+        const fieldsToValidate = fieldsToCheck || activity.inputFields.map((_, idx) => idx);
+        
+        fieldsToValidate.forEach((fieldIndex) => {
           const key = this.getInputKey(activityIndex, fieldIndex);
           const userAnswer = this.inputAnswers[key] || '';
           if (!userAnswer.trim()) {
@@ -817,7 +918,9 @@ export class MissionDetailComponent implements OnInit {
         
         let allCorrect = true;
         let hasError = false;
-        activity.inputFields.forEach((field, fieldIndex) => {
+        fieldsToValidate.forEach((fieldIndex) => {
+          const field = activity.inputFields?.[fieldIndex];
+          if (!field) return;
           const key = this.getInputKey(activityIndex, fieldIndex);
           const userAnswer = this.inputAnswers[key] || '';
           const correctValue = String(field.correctValue).trim().toLowerCase();
@@ -909,7 +1012,25 @@ export class MissionDetailComponent implements OnInit {
           }
         }
         
-        const allCorrect = number1Correct && number2Correct && operatorCorrect && resultCorrect && carryCorrect;
+        // Verificar borrow (apenas para subtração)
+        let borrowCorrect = true;
+        if (op.operation === 'subtraction') {
+          const borrowKey = `${activityIndex}-cdu-borrow`;
+          const userBorrow = this.cduBorrowAnswers[borrowKey];
+          const correctBorrow = this.calculateCDUBorrow(activityIndex);
+          
+          if (correctBorrow) {
+            if (userBorrow) {
+              const borrowDezenaCorrect = userBorrow.dezena === correctBorrow.dezena;
+              const borrowCentenaCorrect = userBorrow.centena === correctBorrow.centena;
+              borrowCorrect = borrowDezenaCorrect && borrowCentenaCorrect;
+            } else {
+              borrowCorrect = correctBorrow.dezena === '' && correctBorrow.centena === '';
+            }
+          }
+        }
+        
+        const allCorrect = number1Correct && number2Correct && operatorCorrect && resultCorrect && carryCorrect && borrowCorrect;
         
         if (allCorrect && !this.completedActivities[activityIndex]) {
           this.completedActivities[activityIndex] = true;
@@ -1165,6 +1286,87 @@ export class MissionDetailComponent implements OnInit {
     }
     
     return null;
+  }
+
+  // Métodos para "emprestar" (borrow) na subtração
+  getCDUBorrow(activityIndex: number, position: 'centena' | 'dezena'): string {
+    const key = `${activityIndex}-cdu-borrow`;
+    return this.cduBorrowAnswers[key]?.[position] || '';
+  }
+
+  setCDUBorrow(activityIndex: number, position: 'centena' | 'dezena', value: string): void {
+    const key = `${activityIndex}-cdu-borrow`;
+    if (!this.cduBorrowAnswers[key]) {
+      this.cduBorrowAnswers[key] = { centena: '', dezena: '' };
+    }
+    this.cduBorrowAnswers[key][position] = value;
+    this.checkInputActivity(activityIndex);
+  }
+
+  // Calcular se precisa emprestar e qual o valor correto
+  calculateCDUBorrow(activityIndex: number): { dezena: string; centena: string } | null {
+    if (!this.mission) return null;
+    const activity = this.mission.activities[activityIndex];
+    if (activity.type !== 'cdu-operation' || !activity.cduOperation) return null;
+    if (activity.cduOperation.operation !== 'subtraction') return null;
+
+    const key1 = `${activityIndex}-cdu-number1`;
+    const key2 = `${activityIndex}-cdu-number2`;
+    const userCDU1 = this.cduNumber1Answers[key1];
+    const userCDU2 = this.cduNumber2Answers[key2];
+
+    if (!userCDU1 || !userCDU2) return null;
+
+    const num1 = {
+      centena: parseInt(userCDU1.centena) || 0,
+      dezena: parseInt(userCDU1.dezena) || 0,
+      unidade: parseInt(userCDU1.unidade) || 0
+    };
+
+    const num2 = {
+      centena: parseInt(userCDU2.centena) || 0,
+      dezena: parseInt(userCDU2.dezena) || 0,
+      unidade: parseInt(userCDU2.unidade) || 0
+    };
+
+    let dezenaBorrow = '';
+    let centenaBorrow = '';
+
+    // Verificar se precisa emprestar na unidade
+    if (num1.unidade < num2.unidade) {
+      // Precisa emprestar da dezena para a unidade
+      dezenaBorrow = '1';
+      
+      // Se a dezena é 0 ou menor que 1 (após considerar que vai emprestar), precisa emprestar da centena
+      if (num1.dezena === 0) {
+        centenaBorrow = '1';
+      }
+    }
+    
+    // Verificar se precisa emprestar na dezena (considerando que pode ter emprestado para unidade)
+    const dezenaAposEmprestimo = num1.dezena - (dezenaBorrow === '1' ? 1 : 0);
+    if (dezenaAposEmprestimo < num2.dezena) {
+      // Precisa emprestar da centena para a dezena
+      centenaBorrow = '1';
+    }
+
+    return { dezena: dezenaBorrow, centena: centenaBorrow };
+  }
+
+  isCDUBorrowCorrect(activityIndex: number, position: 'centena' | 'dezena'): boolean | null {
+    if (!this.mission) return null;
+    const activity = this.mission.activities[activityIndex];
+    if (activity.type !== 'cdu-operation' || !activity.cduOperation) return null;
+    if (activity.cduOperation.operation !== 'subtraction') return null;
+
+    const correctBorrow = this.calculateCDUBorrow(activityIndex);
+    if (!correctBorrow) return null;
+
+    const key = `${activityIndex}-cdu-borrow`;
+    const userBorrow = this.cduBorrowAnswers[key];
+    if (!userBorrow || !userBorrow[position]) return null;
+
+    return userBorrow[position] === correctBorrow[position];
   }
 
   // Métodos para seleção de sorvetes
@@ -1502,10 +1704,17 @@ export class MissionDetailComponent implements OnInit {
     } else {
       this.setInputValue(activityIndex, 1, '');
     }
+    
+    // Para Desafios 1 e 2, validar diretamente usando checkInputActivity
+    if (activityIndex === 0 || activityIndex === 1) {
+      setTimeout(() => {
+        this.checkInputActivity(activityIndex);
+      }, 100);
+    }
   }
 
-  isContaFieldCorrect(activityIndex: number, fieldIndex: number): boolean | null {
-    if (((activityIndex < 0 || activityIndex > 21) && (activityIndex < 27 || activityIndex > 32) && activityIndex !== 35 && (activityIndex < 40 || activityIndex > 44) && activityIndex !== 47 && (activityIndex < 50 || activityIndex > 54) && activityIndex !== 57 && (activityIndex < 62 || activityIndex > 63)) || !this.mission) return null;
+  getContaCorrectValues(activityIndex: number): { correctNum1: string; correctNum2: string; correctResult: string } | null {
+    if (!this.mission) return null;
     const activity = this.mission.activities[activityIndex];
     if (activity.type !== 'math-input' || !activity.inputFields || activity.inputFields.length < 2) return null;
     
@@ -1514,8 +1723,34 @@ export class MissionDetailComponent implements OnInit {
     let correctNum2 = '';
     let correctResult = '';
     
-    // Para Desafios 3, 4, 5 e 6 (rodas de carros)
-    if (activityIndex === 2) {
+    // Usar a mesma lógica do isContaFieldCorrect
+    const result = this.getContaCorrectValuesFromIndex(activityIndex);
+    if (result && result.correctNum1 && result.correctNum2 && result.correctResult) {
+      return result;
+    }
+    
+    return null;
+  }
+
+  getContaCorrectValuesFromIndex(activityIndex: number): { correctNum1: string; correctNum2: string; correctResult: string } | null {
+    if (!this.mission) return null;
+    
+    let correctNum1 = '';
+    let correctNum2 = '';
+    let correctResult = '';
+    
+    // Para Desafios 1 e 2 (rodas de carros)
+    if (activityIndex === 0) {
+      // Desafio 1: 1 x 4 = 4
+      correctNum1 = '1';
+      correctNum2 = '4';
+      correctResult = '4';
+    } else if (activityIndex === 1) {
+      // Desafio 2: 2 x 4 = 8
+      correctNum1 = '2';
+      correctNum2 = '4';
+      correctResult = '8';
+    } else if (activityIndex === 2) {
       // Desafio 3: 3 x 4 = 12
       correctNum1 = '3';
       correctNum2 = '4';
@@ -1746,6 +1981,25 @@ export class MissionDetailComponent implements OnInit {
       correctResult = num2Parts[1].trim();
     }
     
+    // Retornar os valores corretos se todos foram preenchidos
+    if (correctNum1 && correctNum2 && correctResult) {
+      return { correctNum1, correctNum2, correctResult };
+    }
+    
+    return null;
+  }
+
+  isContaFieldCorrect(activityIndex: number, fieldIndex: number): boolean | null {
+    if (((activityIndex < 0 || activityIndex > 21) && (activityIndex < 27 || activityIndex > 32) && activityIndex !== 35 && (activityIndex < 40 || activityIndex > 44) && activityIndex !== 47 && (activityIndex < 50 || activityIndex > 54) && activityIndex !== 57 && (activityIndex < 62 || activityIndex > 63)) || !this.mission) return null;
+    const activity = this.mission.activities[activityIndex];
+    if (activity.type !== 'math-input' || !activity.inputFields || activity.inputFields.length < 2) return null;
+    
+    // Obter valores corretos
+    const correctValues = this.getContaCorrectValuesFromIndex(activityIndex);
+    if (!correctValues) return null;
+    
+    const { correctNum1, correctNum2, correctResult } = correctValues;
+    
     const key = `${activityIndex}-conta`;
     const conta = this.contaAnswers[key];
     if (!conta) return null;
@@ -1764,10 +2018,11 @@ export class MissionDetailComponent implements OnInit {
     
     let isCorrect: boolean;
     if (isSubtraction || isDivision) {
-      // Subtração e divisão não são comutativas, ordem importa
+      // Subtração e divisão não são comutativas - ordem importa
       isCorrect = userNum1 === correctNum1 && userNum2 === correctNum2 && userResult === correctResult;
     } else {
-      // Multiplicação é comutativa
+      // Multiplicação é comutativa: a ordem dos fatores não altera o resultado
+      // Aceita tanto "2 x 8 = 16" quanto "8 x 2 = 16"
       const isCorrectOrder = userNum1 === correctNum1 && userNum2 === correctNum2 && userResult === correctResult;
       const isCommutativeOrder = userNum1 === correctNum2 && userNum2 === correctNum1 && userResult === correctResult;
       isCorrect = isCorrectOrder || isCommutativeOrder;
@@ -1816,6 +2071,7 @@ export class MissionDetailComponent implements OnInit {
     if (activity.type !== 'math-input' || !activity.question) return false;
     return activity.question.includes('= ?');
   }
+
 
   // Obter a parte da pergunta antes do "= ?"
   getQuestionBeforeEquals(activityIndex: number): string {

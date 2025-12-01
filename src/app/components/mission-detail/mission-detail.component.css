@@ -2585,6 +2585,71 @@
   min-height: 50px;
 }
 
+/* Estilos para linha de empréstimo (borrow) na subtração */
+.cdu-borrow-row {
+  display: contents;
+}
+
+.cdu-borrow-cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  min-height: 50px;
+  position: relative;
+}
+
+.cdu-borrow-input {
+  width: 40px;
+  height: 40px;
+  text-align: center;
+  font-size: 1.3em;
+  font-weight: bold;
+  border: 2px solid #ff9800;
+  border-radius: 50%;
+  font-family: 'Comic Sans MS', sans-serif;
+  transition: all 0.3s ease;
+  background: #fff3e0;
+  color: #ff9800;
+  position: relative;
+  z-index: 1;
+}
+
+.cdu-borrow-input:focus {
+  outline: none;
+  border-color: #f57c00;
+  box-shadow: 0 0 10px rgba(255, 152, 0, 0.3);
+  transform: scale(1.1);
+  background: white;
+}
+
+.cdu-borrow-input.correct {
+  background: #e8f5e9;
+  border-color: #4caf50;
+  color: #2e7d32;
+}
+
+.cdu-borrow-input.incorrect {
+  background: #ffebee;
+  border-color: #f44336;
+  color: #c62828;
+}
+
+.cdu-borrow-input:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.cdu-borrow-cell-empty {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  min-height: 50px;
+}
+
 .cdu-check {
   text-align: center;
   font-size: 1.3em;
